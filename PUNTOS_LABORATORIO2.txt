@@ -1,0 +1,145 @@
+Punto 4.
+Tu diagrama de GNU Radio está tomando una imagen (rana.jpg), convirtiéndola en una secuencia binaria, y luego analizándola como si fuera una señal discreta. Por tanto, lo que estás observando no es “contenido visual” de la rana, sino propiedades estadísticas y espectrales de los bits de la imagen. A partir de tus gráficas se pueden extraer varias conclusiones técnicas.
+
+En términos estadísticos:
+Los bits de una imagen comprimida o con suficiente variabilidad tienden a comportarse casi aleatoriamente.
+Por eso la señal parece ruido blanco discreto.
+
+Conclusión temporal
+La secuencia de bits de la imagen no tiene periodicidad evidente y se comporta aproximadamente como un proceso aleatorio estacionario.
+La señal obtenida al convertir la imagen en una secuencia de bits presenta un comportamiento pseudoaleatorio en el dominio del tiempo.
+La densidad espectral de potencia es aproximadamente uniforme, lo que indica ausencia de componentes periódicas dominantes.
+Esto sugiere que la secuencia de bits posee propiedades similares a ruido blanco discreto, algo esperado cuando se analizan datos digitales sin estructura periódica.
+
+Punto 5.
+La gráfica superior muestra la amplitud de la señal de audio en función del tiempo.
+
+Observaciones:
+La señal oscila alrededor de cero.
+No se observa una periodicidad clara en el pequeño intervalo mostrado.
+
+La señal de audio presenta un comportamiento no periódico en el dominio del tiempo y un espectro de potencia distribuido en un amplio rango de frecuencias. Esto es característico de señales acústicas reales, las cuales están compuestas por múltiples componentes frecuenciales superpuestas.
+
+b) Papel del bloque Interpolation FIR Filter
+
+Este bloque realiza interpolación (upsampling) de la señal.
+
+Esto significa que:
+
+aumenta la frecuencia de muestreo
+
+inserta muestras adicionales entre símbolos
+
+El filtro FIR luego suaviza la señal para evitar espectro artificial.
+
+En comunicaciones digitales se usa para convertir bits en pulsos rectangulares con varios samples por símbolo.
+
+b1) ¿Por qué el parámetro vale SPS?
+
+SPS significa: Samples Per Symbol
+Es decir:
+SPS=fs/Rb
+	​	​
+donde:
+fs= frecuencia de muestreo
+Rb= tasa de bits
+
+El bloque interpola cada símbolo para que esté representado por SPS muestras.
+Si se cambia este valor:
+aumenta o disminuye la resolución temporal del símbolo
+cambia la frecuencia de muestreo final
+
+b2) Cambios para analizar la señal en p3
+
+Si se quiere analizar p3, se debe:
+Conectar un Virtual Sink en p3.
+Crear un Virtual Source con ID p3.
+Conectarlo a los bloques de instrumentación:
+QT GUI Time Sink
+FFT
+PSD
+Esto es exactamente el mismo esquema que se usa para analizar p4, pero cambiando el punto de observación.
+
+b3) Fórmula del ancho de banda en p4
+
+Para una señal binaria rectangular:
+
+B≈Rb	​
+Si la señal tiene SPS muestras por símbolo, el ancho de banda puede expresarse como:
+
+B≈fs/SPS
+
+donde:
+fs = frecuencia de muestreo en p4.
+
+
+
+b4) Frecuencia de muestreo en p3
+La relación entre frecuencias de muestreo es:
+fs,p4=SPS*fs,p3
+
+	​
+por tanto:
+fs,p3=fs,p4/SPS
+​
+
+c) ¿Por qué la PSD de audio y de foto es diferente?
+
+Aunque ambas terminan siendo señales binarias rectangulares, el contenido estadístico de los datos es diferente.
+
+Imagen
+Los bits de una imagen:
+tienen alta variabilidad
+se comportan casi como ruido aleatorio
+
+Por eso su PSD tiende a verse casi plana (similar a ruido blanco).
+
+Audio
+El audio:
+contiene correlación temporal
+tiene estructuras periódicas (frecuencias de voz o sonido)
+
+Esto produce mayor energía en ciertas frecuencias.
+Por eso la PSD puede mostrar distribuciones diferentes de potencia.
+
+d) Papel del bloque Throttle
+
+El bloque Throttle limita la velocidad de procesamiento del flujo de datos.
+Esto es necesario cuando:
+no hay hardware SDR real (USRP, etc.)
+
+Su función es:
+limitar el flujo de datos a fs
+	​
+para evitar que GNU Radio consuma toda la CPU ejecutando el flujo lo más rápido posible.
+
+e) ¿Qué pasaría si no se convierte a señal bipolar?
+
+Si la señal permanece:
+{0,1}
+
+entonces:
+la señal tendrá componente DC
+aparecerá un pico fuerte en frecuencia cero en la PSD
+
+Esto ocurre porque el valor promedio de la señal es distinto de cero:
+E[x]≠0
+
+En cambio, con señal bipolar:
+{−1,1}
+el promedio es aproximadamente cero, eliminando la componente DC.
+
+f) Ruido blanco y ancho de banda infinito
+
+Teóricamente:
+El ruido blanco ideal tiene PSD constante para todas las frecuencias:
+Sx(f)=constante
+lo que implica ancho de banda infinito.
+
+Sin embargo, en GNU Radio se observa:
+un ancho de banda finito
+limitado por la frecuencia de muestreo
+Esto se debe al teorema de Nyquist:
+
+fmax=fs2
+Por lo tanto, el ruido que vemos está limitado al rango de frecuencias representable por el sistema digital.
